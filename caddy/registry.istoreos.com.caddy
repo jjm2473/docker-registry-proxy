@@ -1,0 +1,22 @@
+# Docker Hub registry proxy entrypoint.
+registry.istoreos.com registry.istoreos.com.cf.linkease.com {
+	tls /etc/caddy/ssl/istoreos.com/istoreos.com.pem /etc/caddy/ssl/istoreos.com/istoreos.com.key
+	log {
+		output file /var/log/caddy/registry.istoreos.com.log {
+			roll_size 100MiB
+			roll_keep 10
+			roll_keep_for 720h
+		}
+		format json
+	}
+
+	reverse_proxy 127.0.0.1:9080 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		transport http {
+			dial_timeout 15s
+			response_header_timeout 120s
+		}
+	}
+}
